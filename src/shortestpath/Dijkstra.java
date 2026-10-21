@@ -25,9 +25,16 @@ public class Dijkstra {
         public long[] distances;
         public int[] parent;
 
-        Result(long[] distances, int[] parent) {
-            this.distances = distances;
-            this.parent = parent;
+        public long edgeChecks;
+        public long queueAdds;
+        public long queuePolls;
+
+        Result(int n) {
+            distances = new long[n];
+            parent = new int[n];
+
+            Arrays.fill(distances, Long.MAX_VALUE);
+            Arrays.fill(parent, -1);
         }
 
         public ArrayList<Integer> getPathTo(int target) {
@@ -45,19 +52,17 @@ public class Dijkstra {
             }
 
             Collections.reverse(path);
+
             return path;
         }
     }
 
     public static Result shortestPaths(Graph graph, int source) {
-
-        int n = graph.vertices;
-
-        if (source < 0 || source >= n) {
+        if (source < 0 || source >= graph.vertices) {
             throw new IllegalArgumentException("Invalid source vertex");
         }
 
-        // Dijkstra does not support negative weights
+        // Dijkstra requires non-negative weights
         for (Edge edge : graph.edges) {
             if (edge.weight < 0) {
                 throw new IllegalArgumentException(
@@ -66,43 +71,44 @@ public class Dijkstra {
             }
         }
 
-        long[] distances = new long[n];
-        int[] parent = new int[n];
-
-        Arrays.fill(distances, Long.MAX_VALUE);
-        Arrays.fill(parent, -1);
+        Result result = new Result(graph.vertices);
 
         PriorityQueue<Node> pq = new PriorityQueue<>(
-                Comparator.comparingLong(node -> node.distance)
+                Comparator.comparingLong(n -> n.distance)
         );
 
-        distances[source] = 0;
+        result.distances[source] = 0;
         pq.add(new Node(source, 0));
+        result.queueAdds++;
 
         while (!pq.isEmpty()) {
 
             Node current = pq.poll();
+            result.queuePolls++;
+
             int vertex = current.vertex;
 
-            // Skip outdated queue entries
-            if (current.distance != distances[vertex]) {
+            // Skip outdated entries
+            if (current.distance != result.distances[vertex]) {
                 continue;
             }
 
             for (Edge edge : graph.adj.get(vertex)) {
+                result.edgeChecks++;
 
                 int next = edge.to;
-                long newDistance = distances[vertex] + edge.weight;
+                long newDistance = result.distances[vertex] + edge.weight;
 
-                if (newDistance < distances[next]) {
-                    distances[next] = newDistance;
-                    parent[next] = vertex;
+                if (newDistance < result.distances[next]) {
+                    result.distances[next] = newDistance;
+                    result.parent[next] = vertex;
 
                     pq.add(new Node(next, newDistance));
+                    result.queueAdds++;
                 }
             }
         }
 
-        return new Result(distances, parent);
+        return result;
     }
 }

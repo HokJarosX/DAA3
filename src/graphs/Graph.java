@@ -6,15 +6,12 @@ public class Graph {
     public int vertices;
     public boolean directed;
 
-    public ArrayList<Edge> edges;
-    public ArrayList<ArrayList<Edge>> adj;
+    public ArrayList<Edge> edges = new ArrayList<>();
+    public ArrayList<ArrayList<Edge>> adj = new ArrayList<>();
 
     public Graph(int vertices, boolean directed) {
         this.vertices = vertices;
         this.directed = directed;
-
-        edges = new ArrayList<>();
-        adj = new ArrayList<>();
 
         for (int i = 0; i < vertices; i++) {
             adj.add(new ArrayList<>());

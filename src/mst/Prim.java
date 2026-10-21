@@ -9,15 +9,25 @@ import java.util.PriorityQueue;
 
 public class Prim {
 
-    public static void findMST(Graph graph) {
+    public static class Result {
+        public ArrayList<Edge> mst = new ArrayList<>();
+        public long totalWeight;
+        public boolean connected;
 
+        public long edgeChecks;
+        public long queueAdds;
+        public long queuePolls;
+    }
+
+    public static Result findMST(Graph graph) {
         if (graph.directed) {
             throw new IllegalArgumentException("Graph must be undirected");
         }
 
+        Result result = new Result();
+
         if (graph.vertices == 0) {
-            System.out.println("Graph is empty");
-            return;
+            return result;
         }
 
         boolean[] visited = new boolean[graph.vertices];
@@ -26,48 +36,45 @@ public class Prim {
                 Comparator.comparingInt(e -> e.weight)
         );
 
-        ArrayList<Edge> mst = new ArrayList<>();
-
-        int totalWeight = 0;
-        int edgeCount = 0;
-
         // Start from vertex 0
         visited[0] = true;
-        pq.addAll(graph.adj.get(0));
 
-        while (!pq.isEmpty() && edgeCount < graph.vertices - 1) {
+        for (Edge edge : graph.adj.get(0)) {
+            result.edgeChecks++;
+
+            if (!visited[edge.to]) {
+                pq.add(edge);
+                result.queueAdds++;
+            }
+        }
+
+        // Build MST
+        while (!pq.isEmpty() && result.mst.size() < graph.vertices - 1) {
 
             Edge edge = pq.poll();
+            result.queuePolls++;
 
             if (visited[edge.to]) {
                 continue;
             }
 
             visited[edge.to] = true;
-            mst.add(edge);
-
-            totalWeight += edge.weight;
-            edgeCount++;
+            result.mst.add(edge);
+            result.totalWeight += edge.weight;
 
             // Add outgoing edges of the new vertex
             for (Edge next : graph.adj.get(edge.to)) {
+                result.edgeChecks++;
+
                 if (!visited[next.to]) {
                     pq.add(next);
+                    result.queueAdds++;
                 }
             }
         }
 
-        if (edgeCount == graph.vertices - 1) {
-            for (Edge edge : mst) {
-                System.out.println(
-                        edge.from + " - " + edge.to +
-                                " : " + edge.weight
-                );
-            }
+        result.connected = result.mst.size() == graph.vertices - 1;
 
-            System.out.println("MST weight: " + totalWeight);
-        } else {
-            System.out.println("Graph is disconnected. MST does not exist.");
-        }
+        return result;
     }
 }
