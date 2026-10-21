@@ -3,11 +3,11 @@ package graphs;
 import java.util.ArrayList;
 
 public class Graph {
-    int vertices;
-    boolean directed;
+    public int vertices;
+    public boolean directed;
 
-    ArrayList<Edge> edges;
-    ArrayList<ArrayList<Edge>> adj;
+    public ArrayList<Edge> edges;
+    public ArrayList<ArrayList<Edge>> adj;
 
     public Graph(int vertices, boolean directed) {
         this.vertices = vertices;
@@ -22,6 +22,10 @@ public class Graph {
     }
 
     public void addEdge(int from, int to, int weight) {
+        if (from < 0 || from >= vertices || to < 0 || to >= vertices) {
+            throw new IllegalArgumentException("Invalid vertex");
+        }
+
         Edge edge = new Edge(from, to, weight);
 
         edges.add(edge);
